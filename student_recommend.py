@@ -124,12 +124,15 @@ if __name__ == '__main__':
     # Initial Probability: First set as stationary distribution of Transition matrix, Eventually should be learnt through data
     Startprob = np.array([0.167,0.333,0.333,0.167])
 
+
+    """setting parameter complete"""
+
+    """initiate HMM"""
     # setting HMM model parameters
     HMM_model = MultinomialHMM(n_components = 4,startprob= Startprob,transmat = Trans,algorithm = "map")
     HMM_model._set_emissionprob(Emiss.T)
     
-    
-    
+    """generate question to recommend"""    
     # generate exercise database
     data_base = gen_ex.question_search(N_seq = np.array([1000,1000,1000,1000]),K = 30,beta_seq= [4,3,2.5,2])
 
@@ -170,7 +173,7 @@ if __name__ == '__main__':
 
 
     # generating sequence
-    for i in range(60):
+    for i in range(60): # boven: upper thres (with termination criteria)
         logprob, posterior = HMM_model.score_samples(seq)
         # estimating current state
         last_post = posterior[posterior.shape[0]-1]
@@ -184,7 +187,7 @@ if __name__ == '__main__':
 #        current_state = current_state + rule_based_level_change(seq,past_num)
 
         if current_state != -1 and last_problem_id[1]!=-1:
-            new_observe = random_observation(Diff_level,current_state)
+            new_observe = random_observation(Diff_level,current_state)  # boven: replace with real performance
             # randomly generate answer for next question
             seq.append(new_observe)
             last_problem_id = data_base.search_problem(current_state,last_problem_id,answer = 1-int(new_observe/4))

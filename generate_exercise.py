@@ -5,6 +5,7 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 import matplotlib.pyplot as plt
 import copy
 
+# generate DB
 def generate_exercise(N=1000,K=30,beta=2):
     """ N :  numbers of questions
         K  : knowledge point number
@@ -18,6 +19,7 @@ def generate_exercise(N=1000,K=30,beta=2):
         matrix[i,np.unique(np.random.random_integers(0,K-1,peu_K))]=1
     return matrix
 
+# per-person ... simulate per-person behavior
 class question_search():
     def __init__(self,N_seq,K,beta_seq):
         """  quest_A/B/C/D : simulated dataset
@@ -35,8 +37,8 @@ class question_search():
         self.qmask_D = np.zeros(N_seq[3])
     
 
-
-
+    # given difficulty + performance =>  knowledge point update 
+    # provide problems for recommendation
     def search_problem(self,diff_label= 0,last_problem_id =[0,0],answer = 0):
         """ diff_label : search difficulty
             last_problem_id : last problem id = [A,B] (A :difficulty, B : id)
