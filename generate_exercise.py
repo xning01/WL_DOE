@@ -35,9 +35,9 @@ class question_search():
         self.qmask_B = np.zeros(N_seq[1])
         self.qmask_C = np.zeros(N_seq[2])
         self.qmask_D = np.zeros(N_seq[3])
-    
 
-    # given difficulty + performance =>  knowledge point update 
+
+    # given difficulty + performance =>  knowledge point update
     # provide problems for recommendation
     def search_problem(self,diff_label= 0,last_problem_id =[0,0],answer = 0):
         """ diff_label : search difficulty
@@ -46,7 +46,7 @@ class question_search():
         # if last problem is correctly answered update knowledge mask
         if answer ==1:
             know_point = self._update_mask(last_problem_id,answer)
-                         
+
         if diff_label ==0:
             data_matrix = self.quest_A
             mask_vector = self.qmask_A
@@ -59,10 +59,10 @@ class question_search():
         else:
             data_matrix = self.quest_D
             mask_vector = self.qmask_D
-        
+
         # get knowledge point
         know_point = self._get_know_point(last_problem_id)
-        
+
          # if last problem is correctly answered search for question
         if answer == 1:
             compare = 0
@@ -86,10 +86,10 @@ class question_search():
                         quest_id = i
                         compare = temp_val
             return [diff_label,quest_id]
-        
-                
-                
-                
+
+
+
+
     def _update_mask(self,last_problem_id ,answer):
         """ updating mask matrix
             last_problem_id : last problem id = [A,B] (A :difficulty, B : id)
@@ -100,7 +100,7 @@ class question_search():
         # if correctly answered update both question mask and knowledge mask
         # otherwise only update question mask
         if answer == 1:
-            
+
             if A == 0:
                 know_point = self.quest_A[B,:]
                 self.Kmask[np.where(know_point ==1)] = 1
@@ -141,8 +141,8 @@ class question_search():
         else:
             know_point = self.quest_D[B,:]
         return know_point
-    
-    
+
+
     def get_know_mask(self):
         """get knowledge mask """
         return self.Kmask
