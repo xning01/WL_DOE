@@ -41,7 +41,7 @@ sudo apt-get install libfreetype6-dev libpng12-dev
 TODO: check how to import the above libraries in Flask 
 sudo pip install matplotlib 
 7. hmmlearn
-TODO: Import the egg into flask project
+sudo pip install hmmlearn
 8. flask (0.10.1) 
 
 # old dependency
