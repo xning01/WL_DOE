@@ -41,13 +41,19 @@ def new_user():
     """
     if not request.json or not ('id' in request.json):
         abort(400)
+    if id in customerDB:
+        abort(400)
+
+    customerDB[id] = [False, None, User()]
 
 
-@app.route("/id/answer", method=['POST'])
+@app.route("/id/answer", methods=['POST'])
 def user_answer():
     """ POST the answer of a customer
     """
     return
+
+@app.route("/id/answer", methods=
 
 if __name__ == '__main__':
     """ Main

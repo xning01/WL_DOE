@@ -43,7 +43,8 @@ class User:
         # State parameters
         self.seq = []
         self.post_level = []  # record level after recommended
-        self.know_cover = []  # record covered knowledges
+        self.know_cover = []  # record covered knowledges, obsolete
+        self.covered_know = set()  # covered knowledges
 
         self.current_state = None
         self.last_problem_id = None
@@ -70,15 +71,18 @@ class User:
 
         self.new_observe = self.random_observation(self.Diff_level,
                                                    np.argmax(Startprob))
-        self.seq.append(self.new_observe)
+        self.seq.append(self.new_observe)  # seq
         self.last_problem_id = self.data_base.search_problem(
                                                         self.current_state,
                                                         self.last_problem_id,
                                                         answer=1 -
                                                         int(self.new_observe/4))
 
+
         self.knowledge = np.double(self.data_base.get_know_mask())
         self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
+
+        # TODO return a first question
 
     def get_next_question(self):
         """ Calculate next question to recommend """
