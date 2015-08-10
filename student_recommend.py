@@ -7,11 +7,11 @@ import copy
 import generate_exercise as gen_ex
 
 def random_observation(Diff_level,level):
-    """ randomly generate observation by using beta distribution modeling student correctness 
+    """ randomly generate observation by using beta distribution modeling student correctness
         Diff_level : beta distribution parameter for different level 4 by 2 matrix
         level: current level
         return : observation
-        
+
         """
     if np.random.beta(Diff_level[level,0],Diff_level[level,1]) >= 0.5 :
         return level
@@ -127,9 +127,9 @@ if __name__ == '__main__':
     # setting HMM model parameters
     HMM_model = MultinomialHMM(n_components = 4,startprob= Startprob,transmat = Trans,algorithm = "map")
     HMM_model._set_emissionprob(Emiss.T)
-    
-    
-    
+
+
+
     # generate exercise database
     data_base = gen_ex.question_search(N_seq = np.array([1000,1000,1000,1000]),K = 30,beta_seq= [4,3,2.5,2])
 
@@ -139,12 +139,12 @@ if __name__ == '__main__':
     Diff_level = np.array([[0.2,0.8],[0.5,0.5],[0.6,0.4],[0.8,0.2]])
 #    Diff_level = np.array([[0.1,0.9],[0.3,0.7],[0.5,0.5],[0.6,0.4]])
 
-    
+
     # observation sequence : i.e. answer = 0/1 & level = 0/1/2/3
     seq = []
     post_level = []
     know_cover = []
-    
+
     # selecting first question
     post_level.append(Startprob)
     current_state = np.argmax(Startprob)
@@ -153,20 +153,20 @@ if __name__ == '__main__':
     # appending observation sequence
     new_observe = random_observation(Diff_level,np.argmax(Startprob))
     seq.append(new_observe)
-    
+
     # appending knowledge coverage
     last_problem_id = data_base.search_problem(current_state,last_problem_id,answer = 1-int(new_observe/4))
     knowledge = np.double(data_base.get_know_mask())
     know_cover.append(np.sum(knowledge)/knowledge.size)
-    
-    
+
+
     # threshold for hidden state based level change
     T1 = 0.3
     T2 = 0.3
     Tpass = 0.6
     # threshold for rule based level change
     past_num = 3
-    
+
 
 
     # generating sequence
@@ -176,7 +176,7 @@ if __name__ == '__main__':
         last_post = posterior[posterior.shape[0]-1]
         # appending current posterior estimation
         post_level.append(last_post)
-        
+
 #        # hidden state based level change
         current_state = level_change(last_post,current_state,T1,T2,Tpass)
 
@@ -191,15 +191,15 @@ if __name__ == '__main__':
             knowledge = np.double(data_base.get_know_mask())
             know_cover.append(np.sum(knowledge)/knowledge.size)
         else:
-            
+
             break
     plot_seq(seq,post_level,know_cover)
-                       
-                   
-                   
-                   
-                   
-                   
+
+
+
+
+
+
 
 
 
