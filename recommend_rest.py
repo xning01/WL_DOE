@@ -41,7 +41,6 @@ def new_user():
     """
     if not request.json or not ('id' in request.json):
         abort(400)
-        customerDB
 
 
 @app.route("/id/answer", method=['POST'])
