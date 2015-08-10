@@ -27,7 +27,7 @@ Startprob = np.array([0.167, 0.333,
 
 T1 = 0.3
 T2 = 0.3
-TPass = 0.6
+Tpass = 0.6
 past_num = 3
 
 
@@ -36,7 +36,7 @@ class User:
         # Init HMM model
         self.HMM_model = MultinomialHMM(n_components=4,
                                         startprob=Startprob,
-                                        tramsmat=Trans,
+                                        transmat=Trans,
                                         algorithm="map")
         self.HMM_model._set_emissionprob(Emiss.T)
 
@@ -92,7 +92,7 @@ class User:
         self.post_level.append(last_post)
         # hidden state based level change
         self.current_state = self.level_change(last_post, self.current_state,
-                                               self.T1, self.T2, self.Tpass)
+                                               T1, T2, Tpass)
         # rule based level change
         # current_state = current_state +
         #                 self.rule_based_level_change(seq,past_num)
@@ -196,7 +196,7 @@ class User:
     def plot_seq(self, seq, post_level, know_cover):
         """Plotting posterior probability and sequence """
         array_seq = np.array(seq)
-        # array_post_level = np.array(post_level)
+        array_post_level = np.array(post_level)
         know_seq = np.array(know_cover)
         plt.subplot(3, 1, 1)
         # plotting exercise sequence
@@ -209,17 +209,16 @@ class User:
         plt.ylim(0, 3)
 
         plt.subplot(3, 1, 2)
-        # lg1= plt.plot(array_post_level[:,0],'r-',label ='A')
-        # lg2=plt.plot(array_post_level[:,1],'g-',label ='B')
-        # lg3=plt.plot(array_post_level[:,2],'b-',label ='C')
-        # lg4=plt.plot(array_post_level[:,3],'k-',label ='D')
+        plt.plot(array_post_level[:, 0], 'r-', label='A')
+        plt.plot(array_post_level[:, 1], 'g-', label='B')
+        plt.plot(array_post_level[:, 2], 'b-', label='C')
+        plt.plot(array_post_level[:, 3], 'k-', label='D')
 
         plt.legend()
         plt.ylim(0, 1)
         plt.subplot(3, 1, 3)
         plt.plot(know_seq)
         plt.show()
-
 
 if __name__ == '__main__':
     user = User()

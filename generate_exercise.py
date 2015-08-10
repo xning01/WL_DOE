@@ -19,7 +19,6 @@ def generate_exercise(N=1000,K=30,beta=2):
         matrix[i,np.unique(np.random.random_integers(0,K-1,peu_K))]=1
     return matrix
 
-# per-person ... simulate per-person behavior
 class question_search():
     def __init__(self,N_seq,K,beta_seq):
         """  quest_A/B/C/D : simulated dataset
