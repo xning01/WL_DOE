@@ -2,46 +2,43 @@ import numpy as np
 from hmmlearn.hmm import MultinomialHMM
 import matplotlib.pyplot as plt
 import copy
-# import generate_exercise as gen_ex
+import generate_exercise as gen_ex
 
 
-class HMMparam:
-    def __init__(self):
-        self.Trans = np.array([[0.8, 0.2, 0, 0],
-                              [0.1, 0.8, 0.1, 0],
-                              [0, 0.1, 0.8, 0.1],
-                              [0, 0, 0.2, 0.8]])
+Trans = np.array([[0.8, 0.2, 0, 0],
+                  [0.1, 0.8, 0.1, 0],
+                  [0, 0.1, 0.8, 0.1],
+                  [0, 0, 0.2, 0.8]])
 
-        self.Emiss_sub = 0.25 * np.ones([4, 4])
+Emiss_sub = 0.25 * np.ones([4, 4])
 
-        self.Emiss_obj_1 = np.array([[0.5, 0.7, 0.8, 0.9],
-                                     [0.3, 0.65, 0.7, 0.85],
-                                     [0.2, 0.5, 0.6, 0.8],
-                                     [0.1, 0.3, 0.5, 0.6]])
-        self.Emiss_obj_2 = 1 - self.Emiss_obj_1
-        self.Emiss = np.zeros([2, 4, 4])
-        self.Emiss[0, :, :] = self.Emiss_obj_1.T * self.Emiss_sub
-        self.Emiss[1, :, :] = self.Emiss_obj_2.T * self.Emiss_sub
-        self.Emiss = self.Emiss.reshape((8, 4))
+Emiss_obj_1 = np.array([[0.5, 0.7, 0.8, 0.9],
+                        [0.3, 0.65, 0.7, 0.85],
+                        [0.2, 0.5, 0.6, 0.8],
+                        [0.1, 0.3, 0.5, 0.6]])
+Emiss_obj_2 = 1 - Emiss_obj_1
+Emiss = np.zeros([2, 4, 4])
+Emiss[0, :, :] = Emiss_obj_1.T * Emiss_sub
+Emiss[1, :, :] = Emiss_obj_2.T * Emiss_sub
+Emiss = Emiss.reshape((8, 4))
 
-        self.Startprob = np.array([0.167, 0.333,
-                                   0.333, 0.167])
+Startprob = np.array([0.167, 0.333,
+                      0.333, 0.167])
 
-        self.T1 = 0.3
-        self.T2 = 0.3
-        self.TPass = 0.6
-        self.past_num = 3
+T1 = 0.3
+T2 = 0.3
+TPass = 0.6
+past_num = 3
 
 
 class User:
-    def __init__(self, param=HMMparam()):
+    def __init__(self):
         # Init HMM model
-        self.Startprob = param.Startprob
         self.HMM_model = MultinomialHMM(n_components=4,
-                                        startprob=self.Startprob,
-                                        tramsmat=param.Trans,
+                                        startprob=Startprob,
+                                        tramsmat=Trans,
                                         algorithm="map")
-        self.HMM_model._set_emissionprob(param.Emiss.T)
+        self.HMM_model._set_emissionprob(Emiss.T)
 
         # State parameters
         self.seq = []
@@ -54,24 +51,32 @@ class User:
         self.knowledge = None
         self.counter = 0  # question counter
 
+        # TODO: replace with real questions and answers
         # exercise difficulty simulation
         self.Diff_level = np.array([[0.2, 0.8], [0.5, 0.5],
                                     [0.6, 0.4], [0.8, 0.2]])
 
+        # generate exercise database
+        self.data_base = gen_ex.question_search(N_seq=np.array([1000, 1000,
+                                                                1000, 1000]),
+                                                K=30,
+                                                beta_seq=[4, 3, 2.5, 2])
+
     def sel_first_question(self):
         """ Select the first question"""
-        self.post_level.append(self.Startprob)
-        self.current_state = np.argmax(self.Startprob)
+        self.post_level.append(Startprob)
+        self.current_state = np.argmax(Startprob)
         self.last_problem_id = [self.current_state, 0]
 
         self.new_observe = self.random_observation(self.Diff_level,
-                                                   np.argmax(self.Startprob))
+                                                   np.argmax(Startprob))
         self.seq.append(self.new_observe)
-        self.last_problem_id = \
-                        self.data_base.search_problem(self.current_state,
-                                                      self.last_problem_id,
-                                                      answer=1 -
-                                                      int(self.new_observe/4))
+        self.last_problem_id = self.data_base.search_problem(
+                                                        self.current_state,
+                                                        self.last_problem_id,
+                                                        answer=1 -
+                                                        int(self.new_observe/4))
+
         self.knowledge = np.double(self.data_base.get_know_mask())
         self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
@@ -89,10 +94,11 @@ class User:
         self.current_state = self.level_change(last_post, self.current_state,
                                                self.T1, self.T2, self.Tpass)
         # rule based level change
-        # current_state = current_state + rule_based_level_change(seq,past_num)
+        # current_state = current_state +
+        #                 self.rule_based_level_change(seq,past_num)
 
         if self.current_state != -1 and self.last_problem_id[1] != -1:
-            # boven: replace with real performance
+            # TODO: replace with real performance
             new_observe = self.random_observation(self.Diff_level,
                                                   self.current_state)
             # randomly generate answer for next question
@@ -104,6 +110,8 @@ class User:
                                                         int(new_observe/5))
             self.knowledge = np.double(self.data_base.get_know_mask())
             self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
+
+            self.counter = self.counter + 1
         else:
             return None  # all the knowledge are covered
 
@@ -122,7 +130,7 @@ class User:
         else:
             return level + 4
 
-    def level_change(state_estimate, current_state, T1, T2, Tpass):
+    def level_change(self, state_estimate, current_state, T1, T2, Tpass):
         """ probability based to decide when to increase/decrease student level
             state_estimate : hmm state estimation for current time
             current_state : t-1 state (deterministic)
@@ -156,7 +164,7 @@ class User:
         else:
             return 0
 
-    def rule_based_level_change(seq, past_num=3):
+    def rule_based_level_change(self, seq, past_num=3):
         """  rule based to decide when to increase/ decrease student level
         return_num = -1: increase
             return_num = 0: hold
@@ -185,7 +193,7 @@ class User:
 
         return return_num
 
-    def plot_seq(seq, post_level, know_cover):
+    def plot_seq(self, seq, post_level, know_cover):
         """Plotting posterior probability and sequence """
         array_seq = np.array(seq)
         # array_post_level = np.array(post_level)
@@ -214,7 +222,6 @@ class User:
 
 
 if __name__ == '__main__':
-    param = HMMparam()
     user = User()
     user.sel_first_question()
 
