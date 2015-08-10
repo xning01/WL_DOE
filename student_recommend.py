@@ -2,7 +2,7 @@ import numpy as np
 from hmmlearn.hmm import MultinomialHMM
 import matplotlib.pyplot as plt
 import copy
-import generate_exercise as gen_ex
+import fetch_exercise as gen_ex
 
 
 Trans = np.array([[0.8, 0.2, 0, 0],
