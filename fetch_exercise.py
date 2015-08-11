@@ -24,7 +24,7 @@ import EtlAdd_api
 
 
 class question_search():
-    def __init__(self, N_seq, K, beta_seq):
+    def __init__(self, conf="./config.ini"):
         """  quest_A/B/C/D : simulated dataset
              Kmask : keep record whether one knowledge point has been covered
              qmask_A/B/C/D : keep record whether one problem has been answered
@@ -33,14 +33,20 @@ class question_search():
         self.knowID = []  # dict searching index of a knowledge point
         self.quest_diff_id = {}  # dict recording id of questions by difficulty
 
+        self.quest_A = None
+        self.quest_B = None
+        self.quest_C = None
+        self.quest_D = None
         self.qmask_A = None
         self.qmask_B = None
         self.qmask_C = None
         self.qmask_D = None
         self.Kmask = None
 
-    def fetch_exercise(self):
-        db = EtlAdd_api.etl_add_api('./config.ini')
+        self.fetch_exercise(conf)
+
+    def fetch_exercise(self, conf):
+        db = EtlAdd_api.etl_add_api(conf)
 
         self.quest_diff_id[1] = db.get_ques_by_level(1)
         self.quest_diff_id[2] = db.get_ques_by_level(2)
@@ -56,8 +62,8 @@ class question_search():
                 qIDset.add(qID)
                 orig_know_cover = db.get_subject_by_ques(qID)
 
-                for knowID in orig_know_cover:
-                    knowIDset.add(knowID)
+                for kID in orig_know_cover:
+                    knowIDset.add(kID)
 
         # self.qID = list(qIDset)
         # self.qID.sort()
@@ -65,12 +71,21 @@ class question_search():
         self.knowID.sort()
 
         # construct full matrix (questionID v.s. knowlegepoint)
-        self.qmask_A = self._gen_qMask_mat(db, self.quest_diff_id[1], knowID)
-        self.qmask_B = self._gen_qMask_mat(db, self.quest_diff_id[2], knowID)
-        self.qmask_C = self._gen_qMask_mat(db, self.quest_diff_id[3], knowID)
-        self.qmask_D = self._gen_qMask_mat(db, self.quest_diff_id[4], knowID)
+        self.quest_A = self._gen_qMask_mat(db, self.quest_diff_id[1],
+                                           self.knowID)
+        self.quest_B = self._gen_qMask_mat(db, self.quest_diff_id[2],
+                                           self.knowID)
+        self.quest_C = self._gen_qMask_mat(db, self.quest_diff_id[3],
+                                           self.knowID)
+        self.quest_D = self._gen_qMask_mat(db, self.quest_diff_id[4],
+                                           self.knowID)
 
-        self.Kmask = np.zeros(len(knowID))
+        self.qmask_A = np.zeros(len(self.quest_diff_id[1]))
+        self.qmask_B = np.zeros(len(self.quest_diff_id[2]))
+        self.qmask_C = np.zeros(len(self.quest_diff_id[3]))
+        self.qmask_D = np.zeros(len(self.quest_diff_id[4]))
+
+        self.Kmask = np.zeros(len(self.knowID))
         db.disconnect()
 
         print "Exercise Input Complete"
@@ -78,13 +93,14 @@ class question_search():
     def _gen_qMask_mat(self, db, quest_byDiff, knowList):
         qNo = len(quest_byDiff)
         kNo = len(knowList)
-        qmask = np.zeros(qNo, kNo)
+        quest = np.zeros([qNo, kNo])
 
         for qIDidx in range(qNo):
-            qID = quest_byDiff(qNo)
+            qID = quest_byDiff[qIDidx]
             for knowID in db.get_subject_by_ques(qID):
-                self.qmask_A[qIDidx, knowID] = 1
-        return qmask
+                knowIDidx = knowList.index(knowID)
+                quest[qIDidx][knowIDidx] = 1
+        return quest
 
     # given difficulty + performance =>  knowledge point update
     # provide problems for recommendation
@@ -141,6 +157,9 @@ class question_search():
                         quest_id = i
                         compare = temp_val
             return [diff_label, quest_id]
+
+    def get_true_questID(self, diff, diff_qID):
+        return self.quest_diff_id[diff][diff_qID]
 
     def _update_mask(self, last_problem_id, ans_correct):
         """ updating mask matrix

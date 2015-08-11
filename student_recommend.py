@@ -58,10 +58,7 @@ class User:
                                     [0.6, 0.4], [0.8, 0.2]])
 
         # generate exercise database
-        self.data_base = gen_ex.question_search(N_seq=np.array([1000, 1000,
-                                                                1000, 1000]),
-                                                K=30,
-                                                beta_seq=[4, 3, 2.5, 2])
+        self.data_base = gen_ex.question_search()
 
     def sel_first_question(self):
         """ Select the first question"""
@@ -116,6 +113,8 @@ class User:
             self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
             self.counter = self.counter + 1
+            return self.data_base.get_true_questID(self.last_problem_id[0],
+                                                   self.last_problem_id[1])
         else:
             return None  # all the knowledge are covered
 
@@ -229,6 +228,6 @@ if __name__ == '__main__':
     user.sel_first_question()
 
     for i in range(60):
-        user.get_next_question()
+        print user.get_next_question()
 
-    user.plot_seq(user.seq, user.post_level, user.know_cover)
+    # user.plot_seq(user.seq, user.post_level, user.know_cover)
