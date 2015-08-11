@@ -1,4 +1,5 @@
 import numpy as np
+import EtlAdd_api
 # from hmmlearn.hmm import MultinomialHMM,GMMHMM
 # import scipy.io as scipy_io
 # from sklearn.metrics.cluster import adjusted_mutual_info_score
@@ -6,11 +7,12 @@ import numpy as np
 # import copy
 
 
-def generate_exercise(N=1000, K=30, beta=2):
-    """ N :  numbers of questions
-        K  : knowledge point number
-        return : binary matrix N by K
-    """
+# def generate_exercise(N=1000, K=30, beta=2):
+""" N :  numbers of questions
+    K  : knowledge point number
+    return : binary matrix N by K
+"""
+"""
     matrix = np.zeros([N, K])
     for i in range(N):
         peu_K = int(np.random.exponential(beta))
@@ -18,6 +20,7 @@ def generate_exercise(N=1000, K=30, beta=2):
             peu_K = int(np.random.exponential(beta))
         matrix[i, np.unique(np.random.random_integers(0, K-1, peu_K))] = 1
     return matrix
+"""
 
 
 class question_search():
@@ -25,16 +28,63 @@ class question_search():
         """  quest_A/B/C/D : simulated dataset
              Kmask : keep record whether one knowledge point has been covered
              qmask_A/B/C/D : keep record whether one problem has been answered
-            """
-        self.quest_A = generate_exercise(N_seq[0], K, beta_seq[0])
-        self.quest_B = generate_exercise(N_seq[1], K, beta_seq[1])
-        self.quest_C = generate_exercise(N_seq[2], K, beta_seq[2])
-        self.quest_D = generate_exercise(N_seq[3], K, beta_seq[3])
-        self.Kmask = np.zeros(K)
-        self.qmask_A = np.zeros(N_seq[0])
-        self.qmask_B = np.zeros(N_seq[1])
-        self.qmask_C = np.zeros(N_seq[2])
-        self.qmask_D = np.zeros(N_seq[3])
+        """
+        # self.qID = []  # list of questions by id
+        self.knowID = []  # dict searching index of a knowledge point
+        self.quest_diff_id = {}  # dict recording id of questions by difficulty
+
+        self.qmask_A = None
+        self.qmask_B = None
+        self.qmask_C = None
+        self.qmask_D = None
+        self.Kmask = None
+
+    def fetch_exercise(self):
+        db = EtlAdd_api.etl_add_api('./config.ini')
+
+        self.quest_diff_id[1] = db.get_ques_by_level(1)
+        self.quest_diff_id[2] = db.get_ques_by_level(2)
+        self.quest_diff_id[3] = db.get_ques_by_level(3)
+        self.quest_diff_id[4] = db.get_ques_by_level(4)
+
+        knowIDset = set()
+        qIDset = set()
+
+        # get number of exercise, knowledge
+        for level in range(1, 5):
+            for qID in self.quest_diff_id[level]:
+                qIDset.add(qID)
+                orig_know_cover = db.get_subject_by_ques(qID)
+
+                for knowID in orig_know_cover:
+                    knowIDset.add(knowID)
+
+        # self.qID = list(qIDset)
+        # self.qID.sort()
+        self.knowID = list(knowIDset)
+        self.knowID.sort()
+
+        # construct full matrix (questionID v.s. knowlegepoint)
+        self.qmask_A = self._gen_qMask_mat(db, self.quest_diff_id[1], knowID)
+        self.qmask_B = self._gen_qMask_mat(db, self.quest_diff_id[2], knowID)
+        self.qmask_C = self._gen_qMask_mat(db, self.quest_diff_id[3], knowID)
+        self.qmask_D = self._gen_qMask_mat(db, self.quest_diff_id[4], knowID)
+
+        self.Kmask = np.zeros(len(knowID))
+        db.disconnect()
+
+        print "Exercise Input Complete"
+
+    def _gen_qMask_mat(self, db, quest_byDiff, knowList):
+        qNo = len(quest_byDiff)
+        kNo = len(knowList)
+        qmask = np.zeros(qNo, kNo)
+
+        for qIDidx in range(qNo):
+            qID = quest_byDiff(qNo)
+            for knowID in db.get_subject_by_ques(qID):
+                self.qmask_A[qIDidx, knowID] = 1
+        return qmask
 
     # given difficulty + performance =>  knowledge point update
     # provide problems for recommendation

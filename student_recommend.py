@@ -75,7 +75,7 @@ class User:
         self.last_problem_id = self.data_base.search_problem(
                                                         self.current_state,
                                                         self.last_problem_id,
-                                                        answer=1 -
+                                                        ans_correct=1 -
                                                         int(self.new_observe/4))
 
 
@@ -110,7 +110,7 @@ class User:
             self.last_problem_id = self.data_base.search_problem(
                                                         self.current_state,
                                                         self.last_problem_id,
-                                                        answer=1 -
+                                                        ans_correct=1 -
                                                         int(new_observe/5))
             self.knowledge = np.double(self.data_base.get_know_mask())
             self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
