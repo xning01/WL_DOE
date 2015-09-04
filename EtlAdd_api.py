@@ -447,34 +447,37 @@ class etl_add_api(object):
                     tmplist.append(k)
                     strtmp=str(tmplist)
                 f.write(strtmp.strip(strtmp[0]).strip(strtmp[-1])+'\n')
-            write_log('etl','ques_be_answer_correct OK','message')
+            write_log('etl', 'ques_be_answer_correct OK', 'message')
         except Exception, e:
-            write_log('etl','ques_be_answer_correct fail' + str(e),'error')
+            write_log('etl', 'ques_be_answer_correct fail' + str(e), 'error')
 
-    def ques_be_answer_lasting(self,ques_id):
+    def ques_be_answer_lasting(self, ques_id):
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
-        save_file_name=target_dir+str(datetime.now().strftime('%Y%m%d%H%M%S'))+' '+self.ques_be_answer_lasting.__name__+'.kol'
+        save_file_name = target_dir + \
+            str(datetime.now().strftime('%Y%m%d%H%M%S')) + ' ' \
+            + self.ques_be_answer_lasting.__name__ + '.kol'
         try:
-            conn=self.conn()
-            cur=conn.cursor()
-            cur.execute("select questionID,spend_on_question from ETL_etl_question where questionID=%d" %(ques_id))
-            res=cur.fetchall()
+            conn = self.conn()
+            cur = conn.cursor()
+            cur.execute("select questionID,spend_on_question\
+                        from ETL_etl_question where questionID=%d" % (ques_id))
+            res = cur.fetchall()
             cur.close()
 
             f = open(save_file_name, 'w')
-            f.write("question_id  spend_on_question "+'\n' )
+            f.write("question_id  spend_on_question " + '\n')
 
             for i in res:
-                listtmp=[]
+                listtmp = []
                 for k in i:
-                    if isinstance(k,datetime):
-                        k=str(k)
-                    elif isinstance(k,long):
-                        k=str(k)
-                    elif isinstance(k,float):
-                        k=str(k)
+                    if isinstance(k, datetime):
+                        k = str(k)
+                    elif isinstance(k, long):
+                        k = str(k)
+                    elif isinstance(k, float):
+                        k = str(k)
                     else:
                         pass
                     listtmp.append(k)
@@ -482,7 +485,7 @@ class etl_add_api(object):
                 f.write(strtmp.strip(strtmp[0]).strip(strtmp[-1])+'\n')
             write_log('etl','ques_be_answer_lasting OK','message')
         except Exception, e:
-            write_log('etl','ques_be_answer_lasting fail' + str(e),'error')
+            write_log('etl', 'ques_be_answer_lasting fail' + str(e), 'error')
 
     def get_ques_by_level(self, ques_level):
         '''
@@ -523,7 +526,7 @@ class etl_add_api(object):
         except Exception, e:
             write_log('etl', 'get_ques_by_level fail' + str(e), 'error')
 
-    def get_usr_last_ques_restult(self, usr_id):
+    def get_usr_last_ques_result(self, usr_id):
         '''
         :param usr_id: usr_ID
         :return: 1=true,0=false
@@ -531,25 +534,28 @@ class etl_add_api(object):
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
-        save_file_name=target_dir+str(datetime.now().strftime('%Y%m%d%H%M%S'))+' '+self.get_usr_last_ques_restult.__name__+'.kol'
+        save_file_name = target_dir + \
+            str(datetime.now().strftime('%Y%m%d%H%M%S')) + ' ' \
+            + self.get_usr_last_ques_restult.__name__+'.kol'
         try:
-            conn=self.conn()
-            cur=conn.cursor()
-            cur.execute("select questionID,is_true from ETL_etl_question where userID=%d" %(usr_id))
-            res=cur.fetchall()
+            conn = self.conn()
+            cur = conn.cursor()
+            cur.execute("select questionID,is_true from \
+                        ETL_etl_question where userID=%d" % (usr_id))
+            res = cur.fetchall()
             cur.close()
 
             f = open(save_file_name, 'w')
-            f.write("user: %d latest result:"%(usr_id)+'\n' )
+            f.write("user: %d latest result:" % (usr_id) + '\n')
 
-            res=res[-1]
-            print res[0],res[1]
+            res = res[-1]
+            print res[0], res[1]
 
             f.write(str(res[0])+' '+str(res[1])+'\n')
             f.close()
-            write_log('etl','get_usr_last_ques_restult OK','message')
+            write_log('etl', 'get_usr_last_ques_restult OK', 'message')
         except Exception, e:
-            write_log('etl','get_usr_last_ques_restult fail' + str(e),'error')
+            write_log('etl', 'get_usr_last_ques_restult fail' + str(e), 'error')
 
     def get_subject_by_ques(self, ques_id):
         '''
@@ -587,19 +593,48 @@ class etl_add_api(object):
             write_log('etl', 'get_subject_by_ques fail' + str(e), 'error')
             return None
 
+    def get_subject_all(self):
+        '''
+        :return:all subject
+        don't return valid subject question
+        '''
+        try:
+            conn = self.conn()
+            cur = conn.cursor()
+            cur.execute("select questionID,testing_centre from ETL_question\
+                        where testing_centre <> ''")
+            res = cur.fetchall()
+            cur.close()
+
+            res_list = {}
+
+            for pair in res:
+                rel_sub = []
+
+                sub_list = pair[1].split(';')
+                if len(sub_list) == 0:  # no related subject
+                    continue
+
+                for i in sub_list:
+                    rel_sub.append(int(i))
+
+                res_list[int(pair[0])] = rel_sub
+
+            return res_list
+        except Exception, e:
+            write_log('etl', 'get_subject_all fail' + str(e), 'error')
 
 if __name__ == "__main__":
     cc = etl_add_api('./config.ini')
     print cc.get_host_version()
-
-    ll = cc.get_ques_by_level(1)
-    ll = ll + cc.get_ques_by_level(2)
-    ll = ll + cc.get_ques_by_level(3)
-    ll = ll + cc.get_ques_by_level(4)
-
-    ll.sort()
-    # for i in range(165):
+    print cc.get_subject_all()
+    # ll = cc.get_ques_by_level(1)
+    # ll = ll + cc.get_ques_by_level(2)
+    # ll = ll + cc.get_ques_by_level(3)
+    # ll = ll + cc.get_ques_by_level(4)
+    # ll.sort()
+    # print ll
     #     cc.get_subject_by_ques(i)
-    cc.get_subject_by_ques(3)
+    # cc.get_subject_by_ques(3)
     # cc.get_usr_last_ques_restult(1000)
     # cc.get_subject_by_ques(150)

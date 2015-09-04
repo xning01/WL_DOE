@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, redirect, url_for
+import student_recommend as sRec
 
 """ Initialization
     1. customerDB: per-customer dict.
@@ -20,7 +21,7 @@ from flask import Flask, request, jsonify, abort
         provide REST APIs
 """
 
-customerDB = {}
+customerDB = {}  # This should be put into data base finally.
 app = Flask(__name__)
 
 
@@ -32,7 +33,7 @@ def index():
     return jsonify(msg="It's Working! Go ahead!")
 
 
-@app.route("/id", methods=['POST'])
+@app.route("/newUser", methods=['POST'])
 def new_user():
     """ POST a new user
         Adding a new user and initialize the HMMobj
@@ -41,19 +42,49 @@ def new_user():
     """
     if not request.json or not ('id' in request.json):
         abort(400)
-    if id in customerDB:
+
+    uId = int(request.json['id'])
+    if uId in customerDB:
         abort(400)
 
-    customerDB[id] = [False, None, User()]
+    user = sRec.User()
+
+    # user = None  # debug
+    customerDB[uId] = [False, None, user]
+    # post a first question
+    return jsonify({"next_question": str(user.sel_first_question())})
+    # return jsonify({"next_question": str(111)})
 
 
-@app.route("/id/answer", methods=['POST'])
+@app.route("/answer", methods=['POST'])
 def user_answer():
-    """ POST the answer of a customer
+    """ POST a new user
+        Adding a new user and initialize the HMMobj
+        HowTo use: curl -i -H "Content-Type: application/json" \
+               -X POST -d '{"id":1}' http://localhost:5000/id
     """
-    return
+    if not request.json or not ('id' in request.json):
+        abort(400)
+    content = request.json
+    uId = int(content['id'])
 
-@app.route("/id/answer", methods=
+    print uId
+
+    if not (uId in customerDB):  # redirects to registration page
+        return redirect(url_for('new_user'), 301)
+
+    if not ('correctness' in request.json):
+        abort(400)
+
+    correctness = int(content['correctness'])
+    if correctness != 0:
+        correctness = 1
+
+    return jsonify({"next_question":
+                    str(customerDB[id][2].get_next_question(correctness))})
+
+    # debug
+    # return jsonify({"next_question": "666"})
 
 if __name__ == '__main__':
     """ Main

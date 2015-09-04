@@ -30,6 +30,8 @@ T2 = 0.3
 Tpass = 0.6
 past_num = 3
 
+# mother copy for question import
+
 
 class User:
     def __init__(self):
@@ -58,7 +60,7 @@ class User:
                                     [0.6, 0.4], [0.8, 0.2]])
 
         # generate exercise database
-        self.data_base = gen_ex.question_search()
+        self.data_base = gen_ex.question_import()
 
     def sel_first_question(self):
         """ Select the first question"""
@@ -70,20 +72,19 @@ class User:
                                                    np.argmax(Startprob))
         self.seq.append(self.new_observe)  # seq
         self.last_problem_id = self.data_base.search_problem(
-                                                        self.current_state,
-                                                        self.last_problem_id,
-                                                        ans_correct=1 -
-                                                        int(self.new_observe/4))
-
+            self.current_state,
+            self.last_problem_id,
+            ans_correct=1 - int(self.new_observe/4)
+        )
 
         self.knowledge = np.double(self.data_base.get_know_mask())
         self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
         # TODO return a first question
 
-    def get_next_question(self):
+    def get_next_question(self, ans_correct, thres=60):
         """ Calculate next question to recommend """
-        if (self.counter >= 60):
+        if (self.counter >= thres):
             return None
 
         logprob, posterior = self.HMM_model.score_samples(self.seq)
@@ -105,10 +106,11 @@ class User:
             # randomly generate answer for next question
             self.seq.append(new_observe)
             self.last_problem_id = self.data_base.search_problem(
-                                                        self.current_state,
-                                                        self.last_problem_id,
-                                                        ans_correct=1 -
-                                                        int(new_observe/5))
+                self.current_state,
+                self.last_problem_id,
+                ans_correct=ans_correct
+            )
+
             self.knowledge = np.double(self.data_base.get_know_mask())
             self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
@@ -227,7 +229,5 @@ if __name__ == '__main__':
     user = User()
     user.sel_first_question()
 
-    for i in range(60):
-        print user.get_next_question()
-
-    # user.plot_seq(user.seq, user.post_level, user.know_cover)
+    for i in range(69):
+        print user.get_next_question(1)
