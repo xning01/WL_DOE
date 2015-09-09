@@ -1,0 +1,9 @@
+REST API Document
+
+GET   http://site/         # Welcome index
+
+POST: {"id": 1}   http://site/newUser     	# create new user, get the first question
+	Return : {"next_question": 12}
+	
+POST: {"id": 2, "correctness": 0}   http://site/answer        # get the next question
+	Return : {"next_question": 12}
