@@ -77,10 +77,12 @@ class User:
             ans_correct=1 - int(self.new_observe/4)
         )
 
+
         self.knowledge = np.double(self.data_base.get_know_mask())
         self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
-        # TODO return a first question
+        return self.data_base.get_true_questID(self.last_problem_id[0],
+                                               self.last_problem_id[1])
 
     def get_next_question(self, ans_correct, thres=60):
         """ Calculate next question to recommend """
@@ -115,6 +117,7 @@ class User:
             self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
 
             self.counter = self.counter + 1
+
             return self.data_base.get_true_questID(self.last_problem_id[0],
                                                    self.last_problem_id[1])
         else:
@@ -227,7 +230,7 @@ class User:
 
 if __name__ == '__main__':
     user = User()
-    user.sel_first_question()
+    print user.sel_first_question()
 
     for i in range(69):
         print user.get_next_question(1)

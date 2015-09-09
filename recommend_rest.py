@@ -48,7 +48,6 @@ def new_user():
         abort(400)
 
     user = sRec.User()
-
     # user = None  # debug
     customerDB[uId] = [False, None, user]
     # post a first question
@@ -68,7 +67,6 @@ def user_answer():
     content = request.json
     uId = int(content['id'])
 
-    print uId
 
     if not (uId in customerDB):  # redirects to registration page
         return redirect(url_for('new_user'), 301)
@@ -81,7 +79,7 @@ def user_answer():
         correctness = 1
 
     return jsonify({"next_question":
-                    str(customerDB[id][2].get_next_question(correctness))})
+                    str(customerDB[uId][2].get_next_question(correctness))})
 
     # debug
     # return jsonify({"next_question": "666"})

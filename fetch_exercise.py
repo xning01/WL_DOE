@@ -56,10 +56,10 @@ class question_import():
     def fetch_exercise(self, conf):
         db = EtlAdd_api.etl_add_api(conf)
 
-        self.quest_diff_id[1] = db.get_ques_by_level(1)
-        self.quest_diff_id[2] = db.get_ques_by_level(2)
-        self.quest_diff_id[3] = db.get_ques_by_level(3)
-        self.quest_diff_id[4] = db.get_ques_by_level(4)
+        self.quest_diff_id[0] = db.get_ques_by_level(1)
+        self.quest_diff_id[1] = db.get_ques_by_level(2)
+        self.quest_diff_id[2] = db.get_ques_by_level(3)
+        self.quest_diff_id[3] = db.get_ques_by_level(4)
 
         if not question_import.backup:
             knowIDset = set()
@@ -92,19 +92,19 @@ class question_import():
             self.knowID.sort()
 
             # construct full matrix (questionID v.s. knowlegepoint)
-            self.quest_A = self._gen_qMask_mat(db, self.quest_diff_id[1],
-                                               self.knowID)
-            self.quest_B = self._gen_qMask_mat(db, self.quest_diff_id[2],
-                                               self.knowID)
-            self.quest_C = self._gen_qMask_mat(db, self.quest_diff_id[3],
-                                               self.knowID)
-            self.quest_D = self._gen_qMask_mat(db, self.quest_diff_id[4],
-                                               self.knowID)
+            self.quest_A = self._gen_qMask_mat(self.quest_diff_id[0],
+                                               self.knowID, all_qID_sub)
+            self.quest_B = self._gen_qMask_mat(self.quest_diff_id[1],
+                                               self.knowID, all_qID_sub)
+            self.quest_C = self._gen_qMask_mat(self.quest_diff_id[2],
+                                               self.knowID, all_qID_sub)
+            self.quest_D = self._gen_qMask_mat(self.quest_diff_id[3],
+                                               self.knowID, all_qID_sub)
 
-            self.qmask_A = np.zeros(len(self.quest_diff_id[1]))
-            self.qmask_B = np.zeros(len(self.quest_diff_id[2]))
-            self.qmask_C = np.zeros(len(self.quest_diff_id[3]))
-            self.qmask_D = np.zeros(len(self.quest_diff_id[4]))
+            self.qmask_A = np.zeros(len(self.quest_diff_id[0]))
+            self.qmask_B = np.zeros(len(self.quest_diff_id[1]))
+            self.qmask_C = np.zeros(len(self.quest_diff_id[2]))
+            self.qmask_D = np.zeros(len(self.quest_diff_id[3]))
 
             self.Kmask = np.zeros(len(self.knowID))
 
@@ -113,25 +113,37 @@ class question_import():
             question_import.quest_B_bk = self.quest_B
             question_import.quest_C_bk = self.quest_C
             question_import.quest_D_bk = self.quest_D
-            question_import.qmask_A_bk = copy.deepcopy(self.qmask_A)  # qmasks and Kmask are mutable
+            question_import.qmask_A_bk = copy.deepcopy(self.qmask_A)  # MUTABLE
             question_import.qmask_B_bk = copy.deepcopy(self.qmask_B)
             question_import.qmask_C_bk = copy.deepcopy(self.qmask_C)
             question_import.qmask_D_bk = copy.deepcopy(self.qmask_D)
-            question_import.Kmask_bk = copy.deepcopyp(self.Kmask)
+            question_import.Kmask_bk = copy.deepcopy(self.Kmask)
             question_import.backup = True
         else:
-            self.quest_A = question_import.quest_A_bk  # quests are) immutables
+            self.quest_A = question_import.quest_A_bk  # Immutables
             self.quest_B = question_import.quest_B_bk
             self.quest_C = question_import.quest_C_bk
             self.quest_D = question_import.quest_D_bk
-            self.qmask_A = copy.deepcopy(question_import.qmask_A_bk)  # qmasks and Kmask are mutable
+            self.qmask_A = copy.deepcopy(question_import.qmask_A_bk)  # MUTABLE
             self.qmask_B = copy.deepcopy(question_import.qmask_B_bk)
             self.qmask_C = copy.deepcopy(question_import.qmask_C_bk)
             self.qmask_D = copy.deepcopy(question_import.qmask_D_bk)
-            self.Kmask = copy.deepcopyp(question_import.Kmask_bk)
+            self.Kmask = copy.deepcopy(question_import.Kmask_bk)
 
         print "Exercise Input Complete"
 
+    def _gen_qMask_mat(self, quest_byDiff, knowList, all_qID_sub):
+        qNo = len(quest_byDiff)
+        kNo = len(knowList)
+        quest = np.zeros([qNo, kNo])
+        for qIDidx in range(qNo):
+            qID = quest_byDiff[qIDidx]
+            for knowID in all_qID_sub[qID]:
+                knowIDidx = knowList.index(knowID)
+                quest[qIDidx][knowIDidx] = 1
+        return quest
+
+    """ obsolete
     def _gen_qMask_mat(self, db, quest_byDiff, knowList):
         qNo = len(quest_byDiff)
         kNo = len(knowList)
@@ -143,7 +155,7 @@ class question_import():
                 knowIDidx = knowList.index(knowID)
                 quest[qIDidx][knowIDidx] = 1
         return quest
-
+    """
 
     # given difficulty + performance =>  knowledge point update
     # provide problems for recommendation
