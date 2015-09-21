@@ -3,7 +3,7 @@ from hmmlearn.hmm import MultinomialHMM
 import matplotlib.pyplot as plt
 import copy
 import fetch_exercise as gen_ex
-
+import time
 
 Trans = np.array([[0.8, 0.2, 0, 0],
                   [0.1, 0.8, 0.1, 0],
@@ -53,7 +53,8 @@ class User:
         self.new_observe = None
         self.knowledge = None
         self.counter = 0  # question counter
-
+        
+        self.last_problem_list = []
         # TODO: replace with real questions and answers
         # exercise difficulty simulation
         self.Diff_level = np.array([[0.2, 0.8], [0.5, 0.5],
@@ -122,6 +123,54 @@ class User:
                                                    self.last_problem_id[1])
         else:
             return None  # all the knowledge are covered
+
+    def get_list_question(self,ans_correct,thres=60,list_len = 5):
+        """ Calculate a list of question to recommend """
+        """ input: ans_correct: list of answears
+            list_len: list length for next recommendation batch
+            output: a list of true problem ids
+            """
+        if (self.counter >= thres):
+            return None
+        
+        logprob, posterior = self.HMM_model.score_samples(self.seq)
+        # estimating current state
+        last_post = posterior[posterior.shape[0]-1]
+        # appending current posterior estimation
+        self.post_level.append(last_post)
+        # hidden state based level change
+        self.current_state = self.level_change(last_post, self.current_state,
+                                               T1, T2, Tpass)
+        # rule based level change
+        # current_state = current_state +
+        #                 self.rule_based_level_change(seq,past_num)
+        
+        self.last_problem_list = []
+        if self.current_state != -1 and self.last_problem_id[1] != -1:
+        # TODO: replace with real performance
+            for answer in range(list_len):
+                new_observe = self.random_observation(self.Diff_level,
+                                                  self.current_state)
+            # randomly generate answer for next question
+                self.seq.append(new_observe)
+                self.last_problem_id = self.data_base.search_problem(
+                                                                 self.current_state,
+                                                                 self.last_problem_id,
+                                                                 ans_correct=ans_correct
+                                                                 )
+
+                self.knowledge = np.double(self.data_base.get_know_mask())
+                self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
+
+                self.counter = self.counter + 1
+                if self.last_problem_id[1] != -1:
+                    self.last_problem_list.append(self.data_base.get_true_questID(self.last_problem_id[0],self.last_problem_id[1]))
+                else:
+                    break
+            return self.last_problem_list
+        else:
+            return None  # all the knowledge are covered
+
 
     def random_observation(self, Diff_level, level):
         """ randomly generate observation by using beta distribution modeling
@@ -233,4 +282,9 @@ if __name__ == '__main__':
     print user.sel_first_question()
 
     for i in range(69):
+        t1 = time.time()
         print user.get_next_question(1)
+        t2= time.time()
+        print t2 - t1
+
+

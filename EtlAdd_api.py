@@ -16,9 +16,7 @@ class etl_add_api(object):
         self.charset = read_ini_value(conf_path, 'dbconfig', 'charset')
 
     def conn(self):
-        '''
-        :return:初始化连接，从INI中获取连接参数返回连接对象
-        '''
+        
         try:
             conn = MySQLdb.connect(host=self.hostip, user=self.user,
                                    passwd=self.passwd, db=self.dbname,
@@ -30,10 +28,7 @@ class etl_add_api(object):
             print error_msg
 
     def get_host_version(self):
-        '''
-        从远程数据库中返回系统当前的操作系统和
-        :return:
-        '''
+        
         conn = self.conn()
         try:
             cus = conn.cursor()
@@ -50,12 +45,7 @@ class etl_add_api(object):
             # Log.Error_Log(error_msg)
 
     def reconnectDB(self, *args, **kwargs):
-        '''
-        重连接数据库，
-        :param args:
-        :param kwargs:
-        :return:
-        '''
+        
         try:
             pass
         except (AttributeError, MySQLdb.OperationalError):
@@ -64,18 +54,12 @@ class etl_add_api(object):
             # print 'reconnect fail'
 
     def disconnect(self):
-        '''
-        :return:断开数据库
-        '''
+      
         conn = self.conn()
         conn.close()
 
     def insert_sql_cmd(self, sql_cmd):
-        '''
-        插数据
-        :param sql_cmd:
-        :return:
-        '''
+       
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -90,11 +74,7 @@ class etl_add_api(object):
             return False
 
     def update_sql_cmd(self, sql_cmd):
-        '''
-        更新数据
-        :param sql_cmd:
-        :return:
-        '''
+        
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -109,11 +89,7 @@ class etl_add_api(object):
             return False
 
     def query_sql_cmd(self, sql_cmd):
-        '''
-        查询数据
-        :param sql_cmd:
-        :return:
-        '''
+        
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -488,10 +464,7 @@ class etl_add_api(object):
             write_log('etl', 'ques_be_answer_lasting fail' + str(e), 'error')
 
     def get_ques_by_level(self, ques_level):
-        '''
-        :param ques_id: level 1、2、3、4  4:hardest
-        :return: list(ques_id)
-        '''
+        
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -527,10 +500,7 @@ class etl_add_api(object):
             write_log('etl', 'get_ques_by_level fail' + str(e), 'error')
 
     def get_usr_last_ques_result(self, usr_id):
-        '''
-        :param usr_id: usr_ID
-        :return: 1=true,0=false
-        '''
+        
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -558,10 +528,7 @@ class etl_add_api(object):
             write_log('etl', 'get_usr_last_ques_restult fail' + str(e), 'error')
 
     def get_subject_by_ques(self, ques_id):
-        '''
-        :param ques_id: ques_id
-        :return:
-        '''
+      
         # target_dir = "./result/"
         # if not os.path.isdir(target_dir):
         #        os.makedirs(target_dir)
@@ -594,10 +561,7 @@ class etl_add_api(object):
             return None
 
     def get_subject_all(self):
-        '''
-        :return:all subject
-        don't return valid subject question
-        '''
+       
         try:
             conn = self.conn()
             cur = conn.cursor()
