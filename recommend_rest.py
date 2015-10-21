@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, abort, redirect, url_for
 import student_recommend as sRec
+import score_function as score
 
 """ Initialization
     1. customerDB: per-customer dict.
@@ -23,6 +24,7 @@ import student_recommend as sRec
 
 customerDB = {}  # This should be put into data base finally.
 thres = 60  # Maximum no of questions a customer can answer
+performStat = [score.init_stat(200, 10), score.init_stat(0.5, 0.2)]
 app = Flask(__name__)
 
 
@@ -94,6 +96,42 @@ def user_answer():
         return jsonify({"next_question":
                         str(customerDB[uId][2].get_next_question(correctness,
                                                                  thres))})
+
+
+@app.route("/score", methods=['POST'])
+def cal_score():
+    """ POST the performance and calculate the score
+        HowTo use: curl -i -H "Content-Type: application/json" \
+                     -X POST -d '{"id":1, "speed": [10, 20, 15], \
+                    "accuracy": [1, 0, 0] }' \
+                    http://localhost:5000/score
+    """
+    # if not request.json or not ('id' in request.json):
+    #     abort(400)
+    # content = request.json
+    # uId = int(content['id'])
+
+    # if not (uId in customerDB):  # not registered
+    #    abort(400)
+
+    speed = None
+    accuracy = None
+
+    if ("speed" in request.json):
+        speedPerf = request.json.get('speed')
+        speed = str(1 - score.cal_score(performStat[0][0],
+                                        performStat[0][2], speedPerf))
+        performStat[0] = score.update_stat(performStat[0][0], performStat[0][1],
+                                           performStat[0][3], speedPerf)
+    else:
+        accuracyPerf = request.json.get('accuracy')
+        accuracy = str(score.cal_score(performStat[1][0],
+                                       performStat[1][2],
+                                       accuracyPerf))
+        performStat[1] = score.update_stat(performStat[1][0], performStat[1][1],
+                                           performStat[1][3], accuracyPerf)
+    return jsonify({"speedScore": speed, "accuracyScore": accuracy})
+
 
 if __name__ == '__main__':
     """ Main

@@ -33,7 +33,13 @@ def update_stat(old_mean, old_mean_square, n_num, ans_vector):
     new_mean_square
     new_variance
     """
+    for i in range(len(ans_vector)):
+        if (ans_vector[i] == 0):
+            ans_vector[i] = 0.0000001
+        if (ans_vector[i] == 1):
+            ans_vector[i] = 0.9999999
 
+    ans_vector = np.array(ans_vector)
     n_new = ans_vector.size
     n_all = n_new + n_num
     new_mean = (old_mean * n_num + np.mean(ans_vector) * n_new)/(n_num + n_new)

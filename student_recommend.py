@@ -55,6 +55,7 @@ class User:
         self.counter = 0  # question counter
 
         self.last_problem_list = []
+
         # TODO: replace with real questions and answers
         # exercise difficulty simulation
         self.Diff_level = np.array([[0.2, 0.8], [0.5, 0.5],
@@ -77,7 +78,6 @@ class User:
             self.last_problem_id,
             ans_correct=1 - int(self.new_observe/4)
         )
-
 
         self.knowledge = np.double(self.data_base.get_know_mask())
         self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
@@ -124,7 +124,7 @@ class User:
         else:
             return None  # all the knowledge are covered
 
-    def get_list_question(self,ans_correct,thres=60,list_len = 5):
+    def get_list_question(self, ans_correct, thres=60, list_len=5):
         """ Calculate a list of question to recommend """
         """ input: ans_correct: list of answears
             list_len: list length for next recommendation batch
@@ -147,30 +147,34 @@ class User:
 
         self.last_problem_list = []
         if self.current_state != -1 and self.last_problem_id[1] != -1:
-        # TODO: replace with real performance
+            # TODO: replace with real performance
             for answer in range(list_len):
                 new_observe = self.random_observation(self.Diff_level,
-                                                  self.current_state)
-            # randomly generate answer for next question
+                                                      self.current_state)
+                # randomly generate answer for next question
                 self.seq.append(new_observe)
                 self.last_problem_id = self.data_base.search_problem(
-                                                                 self.current_state,
-                                                                 self.last_problem_id,
-                                                                 ans_correct=ans_correct
-                                                                 )
+                    self.current_state,
+                    self.last_problem_id,
+                    ans_correct=ans_correct
+                )
 
                 self.knowledge = np.double(self.data_base.get_know_mask())
-                self.know_cover.append(np.sum(self.knowledge)/self.knowledge.size)
+                self.know_cover.append(np.sum(self.knowledge) /
+                                       self.knowledge.size)
 
                 self.counter = self.counter + 1
                 if self.last_problem_id[1] != -1:
-                    self.last_problem_list.append(self.data_base.get_true_questID(self.last_problem_id[0],self.last_problem_id[1]))
+                    self.last_problem_list.append(
+                        self.data_base.get_true_questID(
+                            self.last_problem_id[0],
+                            self.last_problem_id[1])
+                    )
                 else:
                     break
             return self.last_problem_list
         else:
             return None  # all the knowledge are covered
-
 
     def random_observation(self, Diff_level, level):
         """ randomly generate observation by using beta distribution modeling
@@ -287,5 +291,3 @@ if __name__ == '__main__':
         print user.get_list_question(1)
         # t2= time.time()
         # print t2 - t1
-
-
