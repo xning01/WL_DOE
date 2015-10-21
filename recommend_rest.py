@@ -106,13 +106,13 @@ def cal_score():
                     "accuracy": [1, 0, 0] }' \
                     http://localhost:5000/score
     """
-    # if not request.json or not ('id' in request.json):
-    #     abort(400)
-    # content = request.json
-    # uId = int(content['id'])
+    if not request.json or not ('id' in request.json):
+        abort(400)
+    content = request.json
+    uId = int(content['id'])
 
-    # if not (uId in customerDB):  # not registered
-    #    abort(400)
+    if not (uId in customerDB):  # not registered
+        abort(400)
 
     speed = None
     accuracy = None
@@ -123,11 +123,13 @@ def cal_score():
                                         performStat[0][2], speedPerf))
         performStat[0] = score.update_stat(performStat[0][0], performStat[0][1],
                                            performStat[0][3], speedPerf)
-    else:
+
+    if ("accuracy" in request.json):
         accuracyPerf = request.json.get('accuracy')
         accuracy = str(score.cal_score(performStat[1][0],
                                        performStat[1][2],
                                        accuracyPerf))
+        print accuracy
         performStat[1] = score.update_stat(performStat[1][0], performStat[1][1],
                                            performStat[1][3], accuracyPerf)
     return jsonify({"speedScore": speed, "accuracyScore": accuracy})
