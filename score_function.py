@@ -12,7 +12,7 @@ def init_stat(mean=200, err=50, number=10):
     n_num
     """
 
-    ans_vector = np.random.normal(200, 50, 10)  # gen first samples
+    ans_vector = np.random.normal(mean, err, number)  # gen first samples
 
     return np.mean(ans_vector), np.mean(np.multiply(ans_vector, ans_vector)), \
         np.var(ans_vector), ans_vector.size

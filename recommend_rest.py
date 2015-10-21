@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, abort, redirect, url_for
 import student_recommend as sRec
-import score_function as score
 
 """ Initialization
     1. customerDB: per-customer dict.
@@ -23,9 +22,7 @@ import score_function as score
 """
 
 customerDB = {}  # This should be put into data base finally.
-scoreStat = score.init_stat()  # This is the score stats (global)
 thres = 60  # Maximum no of questions a customer can answer
-
 app = Flask(__name__)
 
 
@@ -61,7 +58,7 @@ def new_user():
 
 @app.route("/answer", methods=['POST'])
 def user_answer():
-    """ POST the answer of a user
+    """ POST a new user
         Adding a new user and initialize the HMMobj
         HowTo use: curl -i -H "Content-Type: application/json" \
                      -X POST -d '{"id":1, "correctness": 1}' \
@@ -86,6 +83,7 @@ def user_answer():
     if correctness != 0:
         correctness = 1
 
+    listLen = 1
     if ('listLen' in request.json):
         listLen = int(content['listLen'])
         return jsonify({"next_list_question":
@@ -96,21 +94,6 @@ def user_answer():
         return jsonify({"next_question":
                         str(customerDB[uId][2].get_next_question(correctness,
                                                                  thres))})
-
-
-@app.route("/score", methods=['POST'])
-def get_score():
-    """ POST a list of performance to get score
-        Getting the score of a batch of answers
-        HowTo use: curl -i -H "Content-Type: application/json" \
-                        -X POST -d '{"id":1, "accuracy": [1,0,1,0,1]}' \
-                        http://localhost:5000/score
-                 : curl -i -H "Content-Type: application/json" \
-                        -X POST -d '{"id":1, "time": [15, 25, 30, 100]}'
-                 Note: time is in terms of millisecond  (1 = 0.001 sec)
-    """
-    if not request.json or not ('id' in request.json):
-        abort(400);
 
 if __name__ == '__main__':
     """ Main
