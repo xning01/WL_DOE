@@ -16,7 +16,6 @@ class etl_add_api(object):
         self.charset = read_ini_value(conf_path, 'dbconfig', 'charset')
 
     def conn(self):
-        
         try:
             conn = MySQLdb.connect(host=self.hostip, user=self.user,
                                    passwd=self.passwd, db=self.dbname,
@@ -28,7 +27,6 @@ class etl_add_api(object):
             print error_msg
 
     def get_host_version(self):
-        
         conn = self.conn()
         try:
             cus = conn.cursor()
@@ -45,7 +43,6 @@ class etl_add_api(object):
             # Log.Error_Log(error_msg)
 
     def reconnectDB(self, *args, **kwargs):
-        
         try:
             pass
         except (AttributeError, MySQLdb.OperationalError):
@@ -54,12 +51,10 @@ class etl_add_api(object):
             # print 'reconnect fail'
 
     def disconnect(self):
-      
         conn = self.conn()
         conn.close()
 
     def insert_sql_cmd(self, sql_cmd):
-       
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -74,7 +69,6 @@ class etl_add_api(object):
             return False
 
     def update_sql_cmd(self, sql_cmd):
-        
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -89,7 +83,6 @@ class etl_add_api(object):
             return False
 
     def query_sql_cmd(self, sql_cmd):
-        
         try:
             conn = self.conn()
             cur = conn.cursor()
@@ -464,7 +457,7 @@ class etl_add_api(object):
             write_log('etl', 'ques_be_answer_lasting fail' + str(e), 'error')
 
     def get_ques_by_level(self, ques_level):
-        
+
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -500,7 +493,7 @@ class etl_add_api(object):
             write_log('etl', 'get_ques_by_level fail' + str(e), 'error')
 
     def get_usr_last_ques_result(self, usr_id):
-        
+
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -528,7 +521,7 @@ class etl_add_api(object):
             write_log('etl', 'get_usr_last_ques_restult fail' + str(e), 'error')
 
     def get_subject_by_ques(self, ques_id):
-      
+
         # target_dir = "./result/"
         # if not os.path.isdir(target_dir):
         #        os.makedirs(target_dir)
@@ -561,7 +554,7 @@ class etl_add_api(object):
             return None
 
     def get_subject_all(self):
-       
+
         try:
             conn = self.conn()
             cur = conn.cursor()

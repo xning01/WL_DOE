@@ -53,7 +53,7 @@ class User:
         self.new_observe = None
         self.knowledge = None
         self.counter = 0  # question counter
-        
+
         self.last_problem_list = []
         # TODO: replace with real questions and answers
         # exercise difficulty simulation
@@ -132,7 +132,7 @@ class User:
             """
         if (self.counter >= thres):
             return None
-        
+
         logprob, posterior = self.HMM_model.score_samples(self.seq)
         # estimating current state
         last_post = posterior[posterior.shape[0]-1]
@@ -144,7 +144,7 @@ class User:
         # rule based level change
         # current_state = current_state +
         #                 self.rule_based_level_change(seq,past_num)
-        
+
         self.last_problem_list = []
         if self.current_state != -1 and self.last_problem_id[1] != -1:
         # TODO: replace with real performance
@@ -283,8 +283,9 @@ if __name__ == '__main__':
 
     for i in range(69):
         t1 = time.time()
-        print user.get_next_question(1)
-        t2= time.time()
-        print t2 - t1
+        # print user.get_next_question(1)
+        print user.get_list_question(1)
+        # t2= time.time()
+        # print t2 - t1
 
 
