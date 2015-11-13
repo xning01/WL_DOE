@@ -33,6 +33,11 @@ def update_stat(old_mean, old_mean_square, n_num, ans_vector):
     new_mean_square
     new_variance
     """
+    for i in range(len(ans_vector)):
+        if (ans_vector[i] == 0):
+            ans_vector[i] = 0.0000001
+        if (ans_vector[i] == 1):
+            ans_vector[i] = 0.9999999
 
     ans_vector = np.array(ans_vector)
     n_new = ans_vector.size
@@ -102,22 +107,20 @@ if __name__ == '__main__':
     """ system flow  """
 
     # 1) intialize statistics
-    # rand_vector = np.random.normal()
-    mean_, mean_square_, var_, n_ = init_stat(0.5,0.2,10)
+    rand_vector = np.random.normal()
+
+    mean_, mean_square_, var_, n_ = init_stat(rand_vector)
 
     # note: mean_, mean_square_,var_,n_ should be stored at local file
 
     # 2) new person comes in:
     # input: time or vectory . 1-d/per person
-    # new_rand_vec = np.random.normal(200, 10, 10)
-    for i in range(10):
-        new_rand_vec = np.array([1,0,0,1,1])
-        # 2.1) calculate score
-        # for time score#
-        # score = 1 - cal_score(mean_, var_, new_rand_vec)   # time
-        # for accuracy score
-        score = cal_score(mean_, var_, new_rand_vec)  # accuracy
-        # 2.2)update stat
-        mean_, mean_square_, var_, n_ = update_stat(mean_, mean_square_,
-                                                    n_, new_rand_vec)  # ..
-    print score
+    new_rand_vec = np.random.normal(200, 10, 10)
+    # 2.1) calculate score
+    # for time score#
+    score = 1 - cal_score(mean_, var_, new_rand_vec)   # time
+    # for accuracy score
+    score = cal_score(mean_, var_, new_rand_vec)  # accuracy
+    # 2.2)update stat
+    mean_, mean_square_, var_, n_ = update_stat(mean_, mean_square_,
+                                                n_, new_rand_vec)  # ..

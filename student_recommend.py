@@ -85,7 +85,7 @@ class User:
         return self.data_base.get_true_questID(self.last_problem_id[0],
                                                self.last_problem_id[1])
 
-    def get_next_question(self, ans_correct, thres=60):
+    def get_next_question(self, ans_correct, thres=60, kpoint=-1):
         """ Calculate next question to recommend """
         if (self.counter >= thres):
             return None
@@ -111,7 +111,8 @@ class User:
             self.last_problem_id = self.data_base.search_problem(
                 self.current_state,
                 self.last_problem_id,
-                ans_correct=ans_correct
+                ans_correct=ans_correct,
+                kpoint=kpoint
             )
 
             self.knowledge = np.double(self.data_base.get_know_mask())
@@ -124,14 +125,21 @@ class User:
         else:
             return None  # all the knowledge are covered
 
-    def get_list_question(self, ans_correct, thres=60, list_len=5):
+    def get_list_question(self, ans_correct, thres=60, list_len=5, kpoint=-1):
         """ Calculate a list of question to recommend """
-        """ input: ans_correct: list of answears
+        """ input: ans_correct: list of answers
             list_len: list length for next recommendation batch
             output: a list of true problem ids
             """
         if (self.counter >= thres):
             return None
+
+        self.last_problem_list = []
+        while len(self.last_problem_list) < list_len and self.counter < thres:
+            next_question=self.get_next_question(ans_correct, thres, kpoint)
+            if not next_question: break
+            if next_question not in self.last_problem_list: self.last_problem_list.append(next_question)
+        return self.last_problem_list
 
         logprob, posterior = self.HMM_model.score_samples(self.seq)
         # estimating current state
@@ -148,7 +156,8 @@ class User:
         self.last_problem_list = []
         if self.current_state != -1 and self.last_problem_id[1] != -1:
             # TODO: replace with real performance
-            for answer in range(list_len):
+            #for answer in range(list_len):
+            while len(self.last_problem_list) < list_len:
                 new_observe = self.random_observation(self.Diff_level,
                                                       self.current_state)
                 # randomly generate answer for next question
@@ -156,7 +165,8 @@ class User:
                 self.last_problem_id = self.data_base.search_problem(
                     self.current_state,
                     self.last_problem_id,
-                    ans_correct=ans_correct
+                    ans_correct=ans_correct,
+                    kpoint=kpoint
                 )
 
                 self.knowledge = np.double(self.data_base.get_know_mask())
@@ -165,11 +175,11 @@ class User:
 
                 self.counter = self.counter + 1
                 if self.last_problem_id[1] != -1:
-                    self.last_problem_list.append(
-                        self.data_base.get_true_questID(
-                            self.last_problem_id[0],
-                            self.last_problem_id[1])
-                    )
+                    problem_id=self.data_base.get_true_questID(
+                                   self.last_problem_id[0],
+                                   self.last_problem_id[1])
+                    if problem_id not in self.last_problem_list:
+                        self.last_problem_list.append(problem_id)
                 else:
                     break
             return self.last_problem_list

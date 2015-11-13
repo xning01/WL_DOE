@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, abort, redirect, url_for
 import student_recommend as sRec
 import score_function as score
+# import numpy as np
 
 """ Initialization
     1. customerDB: per-customer dict.
@@ -48,13 +49,16 @@ def new_user():
 
     uId = int(request.json['id'])
     if uId in customerDB:
-        abort(400)
+        return jsonify({"success": False})
+        # abort(400)
 
     user = sRec.User()
     # user = None  # debug
     customerDB[uId] = [False, None, user]
     # post a first question
-    return jsonify({"next_question": str(user.sel_first_question())})
+    # return jsonify({"next_question": str(user.sel_first_question())})
+    user.sel_first_question()
+    return jsonify({"success": True})
     # return jsonify({"next_question": str(111)})
 
 
@@ -85,54 +89,70 @@ def user_answer():
     if correctness != 0:
         correctness = 1
 
+    kpoint = content['know_point'] if 'know_point' in content else -1
+
     listLen = 1
     if ('listLen' in request.json):
         listLen = int(content['listLen'])
         return jsonify({"next_list_question":
                         str(customerDB[uId][2].get_list_question(correctness,
                                                                  thres,
-                                                                 listLen))})
+                                                                 listLen,
+                                                                 kpoint))})
     else:
         return jsonify({"next_question":
                         str(customerDB[uId][2].get_next_question(correctness,
-                                                                 thres))})
+                                                                 thres,
+                                                                 kpoint))})
 
 
 @app.route("/score", methods=['POST'])
 def cal_score():
     """ POST the performance and calculate the score
         HowTo use: curl -i -H "Content-Type: application/json" \
-                     -X POST -d '{"id":1, "speed": [10, 20, 15], \
-                    "accuracy": [1, 0, 0] }' \
+                     -X POST -d '{"id":1, "speed": [10, 20, 15]}' \
+                    http://localhost:5000/score
+        HowTo use: curl -i -H "Content-Type: application/json" \
+                     -X POST -d '{"id":1, "accuracy": [1.0, 0.0, 0.0] }' \
                     http://localhost:5000/score
     """
+    # if not request.json or not ('id' in request.json):
+    #     abort(400)
+    # content = request.json
+    # uId = int(content['id'])
+
+    # if not (uId in customerDB):  # not registered
+    #    abort(400)
+
+    speed = None
+    accuracy = None
+
     if not request.json or not ('id' in request.json):
         abort(400)
     content = request.json
     uId = int(content['id'])
 
-    if not (uId in customerDB):  # not registered
-        abort(400)
+    if not (uId in customerDB):  # redirects to registration page
+        return redirect(url_for('new_user'), 301)
 
-    speed = None
-    accuracy = None
+    # user = customerDB[uId][2]
+    # knowledge = np.double(user.data_base.get_know_mask())
+    # know_cover=np.sum(knowledge)/knowledge.size
 
     if ("speed" in request.json):
         speedPerf = request.json.get('speed')
-        speed = str(1 - score.cal_score(performStat[0][0],
-                                        performStat[0][2], speedPerf))
+        speed = str((1 - score.cal_score(performStat[0][0],
+                                         performStat[0][2], speedPerf)))
         performStat[0] = score.update_stat(performStat[0][0], performStat[0][1],
                                            performStat[0][3], speedPerf)
-
-    if ("accuracy" in request.json):
+    else:
         accuracyPerf = request.json.get('accuracy')
         accuracy = str(score.cal_score(performStat[1][0],
                                        performStat[1][2],
                                        accuracyPerf))
-        print accuracy
         performStat[1] = score.update_stat(performStat[1][0], performStat[1][1],
                                            performStat[1][3], accuracyPerf)
-    return jsonify({"speedScore": speed, "accuracyScore": accuracy})
+    return jsonify({"speed_score": speed, "accuracy_score": accuracy})
 
 
 if __name__ == '__main__':

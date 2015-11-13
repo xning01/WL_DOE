@@ -1,6 +1,9 @@
 __author__ = 'ken201507'
 # -*- coding: utf-8 -*-
-
+'''
+log:
+2015-10-27 update get_subject_all() ,get_ques_by_level()
+'''
 import MySQLdb
 from pub_util import *
 import os
@@ -8,12 +11,12 @@ import os
 
 class etl_add_api(object):
     def __init__(self, conf_path):
-        self.hostip = read_ini_value(conf_path, 'dbconfig', 'hostip')
-        self.user = read_ini_value(conf_path, 'dbconfig', 'dbuser')
-        self.passwd = read_ini_value(conf_path, 'dbconfig', 'passwd')
-        self.dbname = read_ini_value(conf_path, 'dbconfig', 'dbname')
-        self.port = read_ini_value(conf_path, 'dbconfig', 'port')
-        self.charset = read_ini_value(conf_path, 'dbconfig', 'charset')
+        self.hostip = read_ini_value(conf_path, 'dbconfig_s', 'hostip')
+        self.user = read_ini_value(conf_path, 'dbconfig_s', 'dbuser')
+        self.passwd = read_ini_value(conf_path, 'dbconfig_s', 'passwd')
+        self.dbname = read_ini_value(conf_path, 'dbconfig_s', 'dbname')
+        self.port = read_ini_value(conf_path, 'dbconfig_s', 'port')
+        self.charset = read_ini_value(conf_path, 'dbconfig_s', 'charset')
 
     def conn(self):
         try:
@@ -95,6 +98,9 @@ class etl_add_api(object):
             print "%s" % (str(e))
             return False
 
+
+# becasue requirement ,static some return below 20150723 by ken
+#---------------------------------------------------------------------------div--
     def usr_spend_time_on_each_ques(self, usr_id):
         '''becasue requirement ,static some return below 20150723'''
         target_dir = "./result/"
@@ -301,9 +307,26 @@ class etl_add_api(object):
             write_log('etl','usr_test_subject_include fail' + str(e),'error')
 
 
-#use recommendation system
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#use recommendation system
     def usr_accuracy_of_test_subject(self,usr_id):
+
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -457,7 +480,6 @@ class etl_add_api(object):
             write_log('etl', 'ques_be_answer_lasting fail' + str(e), 'error')
 
     def get_ques_by_level(self, ques_level):
-
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -467,8 +489,8 @@ class etl_add_api(object):
         try:
             conn = self.conn()
             cur = conn.cursor()
-            cur.execute("select questionID from ETL_question \
-                        where engry_point=%d" % (ques_level))
+            cur.execute("select question_id from ETL_m_question \
+                        where engry_point=%d and subjects_id<>'' and qtype<>4" % (ques_level))
             res = cur.fetchall()
             cur.close()
 
@@ -484,7 +506,6 @@ class etl_add_api(object):
                         llresult.append(k)
                     else:
                         pass
-
             return llresult
             # debug
             # f.write(str(llresult)+'\n')
@@ -493,7 +514,6 @@ class etl_add_api(object):
             write_log('etl', 'get_ques_by_level fail' + str(e), 'error')
 
     def get_usr_last_ques_result(self, usr_id):
-
         target_dir = "./result/"
         if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
@@ -512,7 +532,7 @@ class etl_add_api(object):
             f.write("user: %d latest result:" % (usr_id) + '\n')
 
             res = res[-1]
-            print res[0], res[1]
+
 
             f.write(str(res[0])+' '+str(res[1])+'\n')
             f.close()
@@ -521,7 +541,6 @@ class etl_add_api(object):
             write_log('etl', 'get_usr_last_ques_restult fail' + str(e), 'error')
 
     def get_subject_by_ques(self, ques_id):
-
         # target_dir = "./result/"
         # if not os.path.isdir(target_dir):
         #        os.makedirs(target_dir)
@@ -531,8 +550,8 @@ class etl_add_api(object):
         try:
             conn = self.conn()
             cur = conn.cursor()
-            cur.execute("select testing_centre from ETL_question \
-                        where questionID=%d" % (ques_id))
+            cur.execute("select subjects_id from ETL_m_question \
+                        where question_id=%d" % (ques_id))
             res = cur.fetchall()
             cur.close()
 
@@ -554,20 +573,20 @@ class etl_add_api(object):
             return None
 
     def get_subject_all(self):
-
+        '''
+        because the data_models change , change the sql 2015-10-27
+        '''
         try:
             conn = self.conn()
             cur = conn.cursor()
-            cur.execute("select questionID,testing_centre from ETL_question\
-                        where testing_centre <> ''")
+            cur.execute("select question_id,subjects_id from ETL_m_question\
+                        where subjects_id <> '' and qtype<>4 ") #ques_id = 57 have problem
             res = cur.fetchall()
             cur.close()
-
             res_list = {}
 
             for pair in res:
                 rel_sub = []
-
                 sub_list = pair[1].split(';')
                 if len(sub_list) == 0:  # no related subject
                     continue
@@ -582,16 +601,17 @@ class etl_add_api(object):
             write_log('etl', 'get_subject_all fail' + str(e), 'error')
 
 if __name__ == "__main__":
+    '''
+    '''
     cc = etl_add_api('./config.ini')
-    print cc.get_host_version()
+    # print cc.get_host_version()
     print cc.get_subject_all()
     # ll = cc.get_ques_by_level(1)
-    # ll = ll + cc.get_ques_by_level(2)
-    # ll = ll + cc.get_ques_by_level(3)
-    # ll = ll + cc.get_ques_by_level(4)
-    # ll.sort()
     # print ll
-    #     cc.get_subject_by_ques(i)
+    # print cc.get_ques_by_level(4)
+
+
+    # cc.get_subject_by_ques(i)
     # cc.get_subject_by_ques(3)
     # cc.get_usr_last_ques_restult(1000)
     # cc.get_subject_by_ques(150)

@@ -16,7 +16,21 @@ POST the answer of a user , get the next (list of) questions
                     http://localhost:5000/answer                                 
                                                                                  
                  : curl -i -H "Content-Type: application/json" \                 
-                     -X POST -d '{"id:1", "listLen": 5, "correctness": 0}' \     
+                     -X POST -d '{"id":1, "listLen": 5, "correctness": 1}' \     
+                    http://localhost:5000/answer                                 
+                                                                                 
+                 : curl -i -H "Content-Type: application/json" \                 
+                     -X POST -d '{"id":1, "listLen": 5, "correctness": 1, "kpoint": 0}' \     
                     http://localhost:5000/answer                                 
 
-Suppose the No question is recommended, response would be "next_question" : "None"
+        Suppose that No question is recommended, response would be "next_question" : "None"
+        Suppose that fewer than 5 questions are recommended, next_list_question may be a list with fewer than 5 elements
+
+POST the performance and calculate the score
+        HowTo use: curl -i -H "Content-Type: application/json" \
+                     -X POST -d '{"id":1, "speed": [10, 20, 15]}' \
+                    http://localhost:5000/score
+        HowTo use: curl -i -H "Content-Type: application/json" \
+                     -X POST -d '{"id":1, "accuracy": [1.0, 0.0, 0.0] }' \
+                    http://localhost:5000/score
+ 

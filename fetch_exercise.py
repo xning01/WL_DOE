@@ -30,6 +30,7 @@ class question_import():
     qmask_C_bk = None
     qmask_D_bk = None
     Kmask_bk = None
+    Kmask = None
     backup = False
 
     def __init__(self, conf="./config.ini"):
@@ -161,7 +162,8 @@ class question_import():
     # provide problems for recommendation
     def search_problem(self, diff_label=0,
                        last_problem_id=[0, 0],
-                       ans_correct=0):
+                       ans_correct=0,
+                       kpoint=-1):
         """ diff_label : search difficulty
             last_problem_id : last problem id = [A,B] (A :difficulty, B : id)
             answer : correct or wrong 0/1 """
@@ -191,6 +193,7 @@ class question_import():
             quest_id = -1
             for i in range(data_matrix.shape[0]):
                 if mask_vector[i] == 0:
+                    if kpoint>=0 and data_matrix[i, kpoint] == 0: continue
                     temp_val = np.multiply(data_matrix[i, :] - know_point,
                                            1-know_point)
                     temp_val = np.sum(np.abs(temp_val))
@@ -204,6 +207,7 @@ class question_import():
             quest_id = -1
             for i in range(data_matrix.shape[0]):
                 if mask_vector[i] == 0:
+                    if kpoint>=0 and data_matrix[i, kpoint] == 0: continue
                     temp_val = np.multiply(data_matrix[i, :] - know_point,
                                            know_point)
                     temp_val = np.sum(np.abs(temp_val))
